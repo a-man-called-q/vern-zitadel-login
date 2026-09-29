@@ -128,6 +128,19 @@
         "{workspaceRoot}/pnpm-lock.yaml"
       ]
     },
+    "test-vern-acceptance": {
+      "description": "Checks the Vern-branded Login App desktop and mobile layouts against the local ZITADEL stack",
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{projectRoot}",
+        "command": "pnpm exec playwright test --config acceptance/vern-playwright.config.ts"
+      },
+      "inputs": [
+        "{projectRoot}/acceptance/tests/vern-login.spec.ts",
+        "{projectRoot}/acceptance/vern-playwright.config.ts",
+        "{workspaceRoot}/pnpm-lock.yaml"
+      ]
+    },
     "pack-archive": {
       "description": "Packages the standalone Login application build into an archive",
       "dependsOn": ["build"],

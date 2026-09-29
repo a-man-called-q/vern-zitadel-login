@@ -114,27 +114,6 @@ export function UsernameForm({
             data-testid="username-text-input"
             suffix={hideSuffix ? undefined : suffix}
           />
-          {allowRegister && (
-            <button
-              className="hover:text-primary-light-500 dark:hover:text-primary-dark-500 text-sm transition-all"
-              onClick={() => {
-                const registerParams = new URLSearchParams();
-                if (organization) {
-                  registerParams.append("organization", organization);
-                }
-                if (requestId) {
-                  registerParams.append("requestId", requestId);
-                }
-
-                router.push("/register?" + registerParams);
-              }}
-              type="button"
-              disabled={loading}
-              data-testid="register-button"
-            >
-              <Translated i18nKey="register" namespace="loginname" />
-            </button>
-          )}
         </div>
 
         {error && (
@@ -158,6 +137,31 @@ export function UsernameForm({
           </Button>
         </div>
       </form>
+
+      {allowRegister && (
+        <p className="mt-2 text-center text-sm text-neutral-500 dark:text-neutral-400">
+          <Translated i18nKey="noAccount" namespace="loginname" />{" "}
+          <button
+            className="text-neutral-950 hover:underline dark:text-white"
+            onClick={() => {
+              const registerParams = new URLSearchParams();
+              if (organization) {
+                registerParams.append("organization", organization);
+              }
+              if (requestId) {
+                registerParams.append("requestId", requestId);
+              }
+
+              router.push("/register?" + registerParams);
+            }}
+            type="button"
+            disabled={loading}
+            data-testid="register-button"
+          >
+            <Translated i18nKey="signUp" namespace="loginname" />
+          </button>
+        </p>
+      )}
     </>
   );
 }

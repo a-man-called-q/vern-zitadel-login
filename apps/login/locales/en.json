@@ -26,6 +26,8 @@
     "title": "Welcome back!",
     "description": "Enter your login details.",
     "register": "Register new user",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
     "submit": "Continue",
     "labels": {
       "loginname": "Loginname",
@@ -160,6 +162,7 @@
     "title": "Sign in with SSO",
     "description": "Select one of the following providers to sign in",
     "orSignInWith": "or sign in with",
+    "orContinueWith": "or continue with",
     "signInWithApple": "Sign in with Apple",
     "signInWithGoogle": "Sign in with Google",
     "signInWithAzureAD": "Sign in with AzureAD",

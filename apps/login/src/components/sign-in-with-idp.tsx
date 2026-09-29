@@ -81,7 +81,13 @@ export function SignInWithIdp({
           <Translated i18nKey="orSignInWith" namespace="idp" />
         </p>
       )}
-      {!!identityProviders?.length && identityProviders?.map(renderIDPButton)}
+      {!!identityProviders?.length && (
+        <div
+          className={`vern-auth-idp grid grid-cols-1 gap-3 ${identityProviders.length === 2 ? "min-[480px]:grid-cols-2" : ""}`}
+        >
+          {identityProviders.map(renderIDPButton)}
+        </div>
+      )}
       {state?.error && (
         <div className="py-4">
           <Alert>{state?.error}</Alert>

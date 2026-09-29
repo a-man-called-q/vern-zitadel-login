@@ -1,1 +1,3 @@
 go-command
+/playwright-report/
+/test-results/

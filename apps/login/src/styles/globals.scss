@@ -18,6 +18,221 @@ html {
   --dark-background-color: #000000;
 }
 
+// Vern login shell, modelled on the shadcn/studio "login-08" block. Everything is
+// scoped to `.vern-auth-panel` (or `.vern-auth-idp`) so the upstream ZITADEL
+// components stay untouched. These rules are unlayered on purpose: they win over
+// the Tailwind utilities that the upstream components use.
+.vern-auth-panel {
+  --vern-primary: #6d5ef5;
+  --vern-primary-hover: #5b4cdf;
+  --vern-border: #e5e5e5;
+  --vern-foreground: #0a0a0a;
+  --vern-muted: #737373;
+  --vern-hover: #f5f5f5;
+  --vern-field: transparent;
+}
+
+.dark .vern-auth-panel {
+  --vern-border: rgb(255 255 255 / 0.12);
+  --vern-foreground: #fafafa;
+  --vern-muted: #a3a3a3;
+  --vern-hover: rgb(255 255 255 / 0.08);
+  --vern-field: rgb(255 255 255 / 0.04);
+}
+
+.vern-auth-panel .ztdl-p {
+  color: var(--vern-muted);
+}
+
+// "or continue with" divider between the social buttons and the form.
+.vern-auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--vern-muted);
+
+  &::before,
+  &::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background-color: var(--vern-border);
+  }
+}
+
+.vern-auth-panel label > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) {
+  height: 2.25rem;
+  min-height: 0;
+  border: 1px solid var(--vern-border);
+  border-radius: 0.5rem;
+  background-color: var(--vern-field);
+  padding: 0.25rem 0.625rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--vern-foreground);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.vern-auth-panel label > input::placeholder {
+  font-style: normal;
+  color: var(--vern-muted);
+}
+
+.vern-auth-panel label > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):focus {
+  border-color: var(--vern-primary);
+  box-shadow: 0 0 0 3px rgb(109 94 245 / 0.3);
+  outline: none;
+}
+
+.vern-auth-panel label > input[class*="border-warn-light-500"] {
+  border-color: var(--theme-light-warn-500);
+}
+
+.dark .vern-auth-panel label > input[class*="border-warn-light-500"] {
+  border-color: var(--theme-dark-warn-500);
+}
+
+.vern-auth-panel
+  label:has(> input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]))
+  > span:first-child:not([class*="text-warn"]) {
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: var(--vern-foreground);
+}
+
+.vern-auth-panel button[data-testid="submit-button"] {
+  flex: 1;
+  justify-content: center;
+  height: 2.25rem;
+  border: 1px solid var(--vern-primary);
+  border-radius: 0.5rem;
+  background-color: var(--vern-primary);
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  transition:
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.vern-auth-panel button[data-testid="submit-button"]:hover:not(:disabled) {
+  border-color: var(--vern-primary-hover);
+  background-color: var(--vern-primary-hover);
+}
+
+.vern-auth-panel button[data-testid="submit-button"]:focus-visible {
+  box-shadow: 0 0 0 3px rgb(109 94 245 / 0.3);
+  outline: none;
+}
+
+.vern-auth-panel button[data-testid="submit-button"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+// The action rows are `[Back] <flex-grow spacer> [Submit]`: drop the spacer so the
+// submit button fills the row, like the full-width button in login-08.
+.vern-auth-panel span.flex-grow:empty {
+  display: none;
+}
+
+.vern-auth-panel button:has(+ span.flex-grow:empty) {
+  height: 2.25rem;
+  margin-inline-end: 0.75rem;
+  border: 1px solid var(--vern-border);
+  border-radius: 0.5rem;
+  background-color: var(--vern-field);
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: var(--vern-foreground);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+
+.vern-auth-panel button:has(+ span.flex-grow:empty):hover:not(:disabled) {
+  background-color: var(--vern-hover);
+}
+
+// Text links only: filled primary buttons use `text-primary-*-contrast-*`.
+.vern-auth-panel a[class*="text-primary"]:not([class*="contrast"]),
+.vern-auth-panel button[class*="text-primary"]:not([class*="contrast"]) {
+  color: #5548d9;
+}
+
+.dark .vern-auth-panel a[class*="text-primary"]:not([class*="contrast"]),
+.dark .vern-auth-panel button[class*="text-primary"]:not([class*="contrast"]) {
+  color: #aaa1ff;
+}
+
+// Social login buttons (sign-in-with-idp.tsx): compact outline buttons, like the
+// Google / Microsoft buttons in login-08.
+.vern-auth-idp button {
+  height: 2.25rem;
+  min-width: 0;
+  border: 1px solid var(--vern-border);
+  border-radius: 0.5rem;
+  background-color: #fff;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: var(--vern-foreground);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+
+.dark .vern-auth-idp button {
+  background-color: var(--vern-field);
+}
+
+.vern-auth-idp button:hover:not(:disabled) {
+  background-color: var(--vern-hover);
+}
+
+.vern-auth-idp button > div,
+.vern-auth-idp button > div > div {
+  min-width: 0;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+// Upstream icon wrappers are 3rem boxes with per-provider margins and padding.
+.vern-auth-idp button > div > div > :not(span) {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.vern-auth-idp button > div > div svg,
+.vern-auth-idp button > div > div > :not(span) > div {
+  width: 100%;
+  height: 100%;
+}
+
+// The Google glyph only fills ~57% of its 150x150 viewBox.
+.vern-auth-idp button > div > div svg[viewBox="0 0 150 150"] {
+  transform: scale(1.5);
+}
+
+.vern-auth-idp button > div > div > span {
+  overflow: hidden;
+  width: auto;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .form-checkbox {
   position: relative;
 }

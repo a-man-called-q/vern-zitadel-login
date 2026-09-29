@@ -50,9 +50,11 @@ export default async function Page(props: { searchParams: Promise<Record<string 
 
   const branding = await getBrandingSettings({ serviceConfig, organization: organization ?? defaultOrganization });
 
+  const showIdps = !!loginSettings?.allowExternalIdp && !!identityProviders?.length;
+
   return (
     <DynamicTheme branding={branding}>
-      <div className="flex flex-col space-y-4">
+      <div className="flex flex-col gap-2">
         <h1>
           <Translated i18nKey="title" namespace="loginname" />
         </h1>
@@ -61,7 +63,24 @@ export default async function Page(props: { searchParams: Promise<Record<string 
         </p>
       </div>
 
-      <div className="w-full">
+      <div className="flex w-full flex-col gap-4">
+        {showIdps && (
+          <SignInWithIdp
+            identityProviders={identityProviders}
+            requestId={requestId}
+            organization={organization}
+            postErrorRedirectUrl="/loginname"
+            loginHint={idpLoginHint}
+            showLabel={false}
+          ></SignInWithIdp>
+        )}
+
+        {showIdps && loginSettings?.allowLocalAuthentication && (
+          <div className="vern-auth-divider" role="separator">
+            <Translated i18nKey="orContinueWith" namespace="idp" />
+          </div>
+        )}
+
         {loginSettings?.allowLocalAuthentication && (
           <UsernameForm
             loginName={loginName}
@@ -74,19 +93,6 @@ export default async function Page(props: { searchParams: Promise<Record<string 
             submit={submit}
             allowRegister={!!loginSettings?.allowRegister}
           ></UsernameForm>
-        )}
-
-        {loginSettings?.allowExternalIdp && !!identityProviders?.length && (
-          <div className="w-full pt-6 pb-4">
-            <SignInWithIdp
-              identityProviders={identityProviders}
-              requestId={requestId}
-              organization={organization}
-              postErrorRedirectUrl="/loginname"
-              loginHint={idpLoginHint}
-              showLabel={loginSettings?.allowLocalAuthentication}
-            ></SignInWithIdp>
-          </div>
         )}
       </div>
     </DynamicTheme>

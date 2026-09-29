@@ -12,18 +12,17 @@ import { getAllowedLanguages } from "@/lib/zitadel";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { Lato } from "next/font/google";
 import { headers } from "next/headers";
 import React, { Suspense } from "react";
 
-const lato = Lato({
-  weight: ["400", "700", "900"],
-  subsets: ["latin"],
-});
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("common");
-  return { title: t("title") };
+  return {
+    title: t("title"),
+    icons: { icon: `${basePath}/vern/favicon.svg` },
+  };
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -43,7 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html className={`${lato.className}`} suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <head />
       <body>
         <ThemeProvider>
@@ -51,9 +50,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Suspense
               fallback={
                 <BackgroundWrapper
-                  className={`bg-background-light-600 dark:bg-background-dark-600 relative flex min-h-screen flex-col justify-center`}
+                  className={`bg-background-light-600 dark:bg-background-dark-600 relative flex min-h-svh flex-col justify-center`}
                 >
-                  <div className="relative mx-auto w-full max-w-[440px] py-8">
+                  <div className="relative mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-10">
                     <Skeleton>
                       <div className="h-40"></div>
                     </Skeleton>
@@ -66,11 +65,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             >
               <LanguageProvider>
                 <BackgroundWrapper
-                  className={`bg-background-light-600 dark:bg-background-dark-600 relative flex min-h-screen flex-col justify-center`}
+                  className={`bg-background-light-600 dark:bg-background-dark-600 relative isolate flex min-h-svh flex-col justify-center`}
                 >
-                  <div className="relative mx-auto w-full max-w-[1100px] py-8">
-                    <div>{children}</div>
-                    <div className="mx-auto flex max-w-[440px] flex-row items-center justify-end space-x-4 px-4 py-4 md:max-w-full md:px-8">
+                  <div className="relative mx-auto flex w-full max-w-[1280px] flex-1 flex-col justify-center px-4 py-5 sm:px-6 lg:px-10">
+                    <div className="w-full flex-1 content-center">{children}</div>
+                    <div className="mx-auto flex w-full max-w-[1180px] flex-row items-center justify-end space-x-4 px-2 py-3 sm:px-4">
                       <LanguageSwitcher languages={languages} />
                       <ThemeSwitch />
                     </div>

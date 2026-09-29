@@ -1,134 +1,81 @@
 "use client";
 
 import { Logo } from "@/components/logo";
-import { useResponsiveLayout } from "@/lib/theme-hooks";
-import { BrandingSettings } from "@zitadel/proto/zitadel/settings/v2/branding_settings_pb";
-import React, { Children, ReactNode } from "react";
-import { Card } from "./card";
+import type { BrandingSettings } from "@zitadel/proto/zitadel/settings/v2/branding_settings_pb";
+import { KeyRound, Languages, ShieldCheck } from "lucide-react";
+import type { ReactNode } from "react";
 import { ThemeWrapper } from "./theme-wrapper";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
+const highlights = [
+  { icon: ShieldCheck, text: "Single sign-on across every Vern workspace" },
+  { icon: KeyRound, text: "Passkeys, authenticator apps and security keys" },
+  { icon: Languages, text: "Light and dark themes, in your language" },
+];
+
 /**
- * DynamicTheme component handles layout switching between traditional top-to-bottom
- * and modern side-by-side layouts based on NEXT_PUBLIC_THEME_LAYOUT.
- *
- * For side-by-side layout:
- * - First child: Goes to left side (title, description, etc.)
- * - Second child: Goes to right side (forms, buttons, etc.)
- * - Single child: Falls back to right side for backward compatibility
- *
- * For top-to-bottom layout:
- * - All children rendered in traditional centered layout
+ * Vern's responsive Login App frame, modelled on the shadcn/studio "login-08"
+ * block: a blurred backdrop, the logo top-left and one translucent card with
+ * the form on the left and a muted brand aside on the right. The left column
+ * renders the upstream page content intact, so every ZITADEL authentication
+ * step uses the same shell.
  */
-export function DynamicTheme({
-  branding,
-  children,
-}: {
-  children: ReactNode | ((isSideBySide: boolean) => ReactNode);
-  branding?: BrandingSettings;
-}) {
-  const { isSideBySide } = useResponsiveLayout();
-
-  // Resolve children immediately to avoid passing functions through React
-  const actualChildren: ReactNode = React.useMemo(() => {
-    if (typeof children === "function") {
-      return (children as (isSideBySide: boolean) => ReactNode)(isSideBySide);
-    }
-    return children;
-  }, [children, isSideBySide]);
-
+export function DynamicTheme({ branding, children }: { children: ReactNode; branding?: BrandingSettings }) {
   return (
     <ThemeWrapper branding={branding}>
-      {isSideBySide
-        ? // Side-by-side layout: first child goes left, second child goes right
-          (() => {
-            const childArray = Children.toArray(actualChildren);
-            const leftContent = childArray[0] || null;
-            const rightContent = childArray[1] || null;
+      <div aria-hidden="true" className="vern-auth-backdrop pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <img
+          alt=""
+          src={`${basePath}/vern/auth-backdrop-light.svg`}
+          className="size-full scale-105 object-cover opacity-90 blur-[7px] saturate-[0.3] dark:hidden"
+        />
+        <img
+          alt=""
+          src={`${basePath}/vern/auth-backdrop-dark.svg`}
+          className="hidden size-full scale-105 object-cover opacity-90 blur-[7px] saturate-[0.3] dark:block"
+        />
+        <div className="absolute inset-0 bg-neutral-100/60 dark:bg-[#0c0e18]/70" />
+      </div>
 
-            // If there's only one child, it's likely the old format - keep it on the right side
-            const hasLeftRightStructure = childArray.length === 2;
+      <header className="fixed top-0 left-0 z-10 px-6 py-4 sm:px-8">
+        <Logo
+          lightSrc={`${basePath}/vern/logo-light.svg`}
+          darkSrc={`${basePath}/vern/logo-dark.svg`}
+          height={34}
+          width={133}
+        />
+      </header>
 
-            return (
-              <div className="relative mx-auto w-full max-w-[1100px] px-8 py-4">
-                <Card>
-                  <div className="flex min-h-[400px]">
-                    {/* Left side: First child + branding */}
-                    <div className="from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 flex w-1/2 flex-col justify-center bg-gradient-to-br p-4 lg:p-8">
-                      <div className="mx-auto max-w-[440px] space-y-8">
-                        {/* Logo and branding */}
-                        {branding && (
-                          <Logo
-                            lightSrc={branding.lightTheme?.logoUrl}
-                            darkSrc={branding.darkTheme?.logoUrl}
-                            height={150}
-                            width={150}
-                          />
-                        )}
+      <div className="py-12">
+        <section className="vern-auth-panel mx-auto flex w-full max-w-md flex-col overflow-hidden rounded-[14px] bg-white/85 shadow-xl ring-1 ring-black/10 backdrop-blur-2xl lg:grid lg:max-w-4xl lg:grid-cols-2 dark:bg-[#171a27]/85 dark:ring-white/10">
+          <main className="flex flex-col gap-6 p-6 sm:p-8 [&_h1]:text-left [&_h1]:text-2xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h1]:text-neutral-950 [&_h1]:dark:text-white">
+            {children}
+          </main>
 
-                        {/* First child content (title, description) - only if we have left/right structure */}
-                        {hasLeftRightStructure && (
-                          <div className="flex flex-col items-start space-y-4 text-left">
-                            {/* Apply larger styling to the content */}
-                            <div className="space-y-6 [&_h1]:text-left [&_h1]:text-4xl [&_h1]:leading-tight [&_h1]:text-gray-900 [&_h1]:lg:text-4xl [&_h1]:dark:text-white [&_p]:text-left [&_p]:leading-relaxed [&_p]:text-gray-700 [&_p]:dark:text-gray-300">
-                              {leftContent}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+          <aside className="vern-auth-art hidden flex-col justify-center gap-8 border-s border-neutral-200 bg-neutral-100/60 p-8 lg:flex dark:border-white/10 dark:bg-white/[0.04]">
+            <div>
+              <h2 className="text-2xl font-semibold tracking-tight text-balance text-neutral-950 dark:text-white">
+                One secure sign-in. All your work.
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-balance text-neutral-500 dark:text-neutral-400">
+                Sign in to your Vern workspace with the account and security options set up for you.
+              </p>
+            </div>
 
-                    {/* Right side: Second child (form) or single child if old format */}
-                    <div className="flex w-1/2 items-center justify-center p-4 lg:p-8">
-                      <div className="w-full max-w-[440px]">
-                        <div className="space-y-6">{hasLeftRightStructure ? rightContent : leftContent}</div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            );
-          })()
-        : // Traditional top-to-bottom layout - center title/description, left-align forms
-          (() => {
-            const childArray = Children.toArray(actualChildren);
-            const titleContent = childArray[0] || null;
-            const formContent = childArray[1] || null;
-            const hasMultipleChildren = childArray.length > 1;
-
-            return (
-              <div className="relative mx-auto w-full max-w-[440px] px-4 py-4">
-                <Card>
-                  <div className="mx-auto flex flex-col items-center space-y-8">
-                    <div className="relative flex flex-row items-center justify-center">
-                      {branding && (
-                        <Logo
-                          lightSrc={branding.lightTheme?.logoUrl}
-                          darkSrc={branding.darkTheme?.logoUrl}
-                          height={150}
-                          width={150}
-                        />
-                      )}
-                    </div>
-
-                    {hasMultipleChildren ? (
-                      <>
-                        {/* Title and description - center aligned */}
-                        <div className="mb-4 flex w-full flex-col items-center text-center">{titleContent}</div>
-
-                        {/* Form content - left aligned */}
-                        <div className="w-full">{formContent}</div>
-                      </>
-                    ) : (
-                      // Single child - use original behavior
-                      <div className="w-full">{actualChildren}</div>
-                    )}
-
-                    <div className="flex flex-row justify-between"></div>
-                  </div>
-                </Card>
-              </div>
-            );
-          })()}
+            <ul className="flex flex-col gap-5">
+              {highlights.map(({ icon: Icon, text }) => (
+                <li key={text} className="flex items-center gap-3.5">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#6d5ef5] text-white">
+                    <Icon aria-hidden="true" className="size-4" />
+                  </span>
+                  <span className="text-sm leading-relaxed text-neutral-950 dark:text-white">{text}</span>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        </section>
+      </div>
     </ThemeWrapper>
   );
 }

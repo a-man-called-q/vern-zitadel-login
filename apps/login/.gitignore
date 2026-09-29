@@ -3,6 +3,8 @@ custom-config.js
 standalone
 tsconfig.tsbuildinfo
 cypress
+/test-results/
+/playwright-report/
 
 .DS_Store
 node_modules
