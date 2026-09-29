@@ -22,9 +22,17 @@ html {
 // scoped to `.vern-auth-panel` (or `.vern-auth-idp`) so the upstream ZITADEL
 // components stay untouched. These rules are unlayered on purpose: they win over
 // the Tailwind utilities that the upstream components use.
+//
+// Accent colors come from the ZITADEL branding settings (`--theme-*` variables set
+// by ThemeWrapper). Filled buttons keep the light-theme primary color in dark mode
+// too; text links follow each theme's own primary color. The fallbacks apply until
+// the branding settings load.
 .vern-auth-panel {
-  --vern-primary: #6d5ef5;
-  --vern-primary-hover: #5b4cdf;
+  --vern-primary: var(--theme-light-primary-500, #6d5ef5);
+  --vern-primary-hover: var(--theme-light-primary-600, #5b4cdf);
+  --vern-on-primary: var(--theme-light-primary-contrast-500, #fff);
+  --vern-ring: color-mix(in srgb, var(--vern-primary) 30%, transparent);
+  --vern-link: var(--theme-light-primary-600, #5548d9);
   --vern-border: #e5e5e5;
   --vern-foreground: #0a0a0a;
   --vern-muted: #737373;
@@ -33,6 +41,7 @@ html {
 }
 
 .dark .vern-auth-panel {
+  --vern-link: var(--theme-dark-primary-500, #aaa1ff);
   --vern-border: rgb(255 255 255 / 0.12);
   --vern-foreground: #fafafa;
   --vern-muted: #a3a3a3;
@@ -84,7 +93,7 @@ html {
 
 .vern-auth-panel label > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):focus {
   border-color: var(--vern-primary);
-  box-shadow: 0 0 0 3px rgb(109 94 245 / 0.3);
+  box-shadow: 0 0 0 3px var(--vern-ring);
   outline: none;
 }
 
@@ -117,7 +126,7 @@ html {
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.25rem;
-  color: #fff;
+  color: var(--vern-on-primary);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
   transition:
     background-color 150ms ease,
@@ -130,7 +139,7 @@ html {
 }
 
 .vern-auth-panel button[data-testid="submit-button"]:focus-visible {
-  box-shadow: 0 0 0 3px rgb(109 94 245 / 0.3);
+  box-shadow: 0 0 0 3px var(--vern-ring);
   outline: none;
 }
 
@@ -166,12 +175,7 @@ html {
 // Text links only: filled primary buttons use `text-primary-*-contrast-*`.
 .vern-auth-panel a[class*="text-primary"]:not([class*="contrast"]),
 .vern-auth-panel button[class*="text-primary"]:not([class*="contrast"]) {
-  color: #5548d9;
-}
-
-.dark .vern-auth-panel a[class*="text-primary"]:not([class*="contrast"]),
-.dark .vern-auth-panel button[class*="text-primary"]:not([class*="contrast"]) {
-  color: #aaa1ff;
+  color: var(--vern-link);
 }
 
 // Social login buttons (sign-in-with-idp.tsx): compact outline buttons, like the
