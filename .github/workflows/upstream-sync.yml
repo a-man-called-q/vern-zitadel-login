@@ -123,7 +123,7 @@ jobs:
 
           This PR merges the stable ZITADEL release [${VERSION}](https://github.com/zitadel/zitadel/releases/tag/${VERSION}), filtered to the Login App sources as \`upstream/${VERSION}\`, without squashing history.
 
-          The backend and Login App must run the same release. After merging, the publish workflow builds a new image; update \`ZITADEL_VERSION\` and \`ZITADEL_LOGIN_IMAGE\` in Vern's \`apps/auth-server/.env.example\` together, and validate the image in staging before changing any deployment.
+          The backend and Login App must run the same release. After merging, the publish workflow builds a new image; update \`ZITADEL_VERSION\` and \`ZITADEL_LOGIN_IMAGE\` in Vern's \`apps/auth-server/.env.example\` and \`deploy/.env.example\` together, and validate the image in staging before changing any deployment.
 
           The sync workflow already ran the checks on this branch; their results are on the commit. GitHub also holds a \`pull_request\` run for approval because a workflow opened this PR; approving it runs the same checks again.
           EOF

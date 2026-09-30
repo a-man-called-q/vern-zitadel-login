@@ -98,7 +98,7 @@ jobs:
           {
             cat "$record"
             echo
-            echo "Vern apps/auth-server/.env.example:"
+            echo "Vern apps/auth-server/.env.example and deploy/.env.example:"
             echo
             echo '```'
             echo "ZITADEL_VERSION=${VERSION}"

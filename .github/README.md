@@ -131,7 +131,8 @@ time, or merges pull in unrelated history. So:
 
 Every push to `main` that touches the Login sources builds a multi-platform
 image tagged `<zitadel-version>-<commit-sha>`. Tags are never overwritten. The
-run summary shows the two lines to set in Vern's `apps/auth-server/.env.example`;
+run summary shows the two lines to set in Vern's `apps/auth-server/.env.example`
+and `deploy/.env.example`;
 change `ZITADEL_VERSION` and `ZITADEL_LOGIN_IMAGE` together, since the backend
 and the Login App must run the same release.
 
