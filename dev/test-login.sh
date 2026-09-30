@@ -1,52 +1,57 @@
 #!/usr/bin/env bash
 # Builds the Login image, starts dev/compose.yml in an isolated project and runs
-# the Vern Playwright checks against it. Needs Node.js, pnpm and Docker, and the
-# workspace dependencies installed with:
-#   pnpm install --frozen-lockfile --filter @zitadel/login...
+# the Vern Playwright checks against it. Needs only Docker: the build and the
+# browser run in containers, and the browser reaches the stack inside its
+# network as http://login.test, so no host port or local Node.js is involved.
 
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-export AUTH_HTTP_PORT="${AUTH_LOGIN_TEST_PORT:-80}"
-export ZITADEL_LOGIN_IMAGE="vern-zitadel-login:local"
-export ZITADEL_VERSION="$(<.vern/UPSTREAM_VERSION)"
-login_route_host="${AUTH_LOGIN_TEST_HOST:-localhost}"
-export ZITADEL_DOMAIN="$login_route_host"
-export NX_DAEMON=false
-export NX_TUI=false
-export NX_NO_CLOUD=true
-# PNPM may otherwise run a full monorepo install before exec when this checkout
-# was installed with a filtered workspace.
-export pnpm_config_verify_deps_before_run="${pnpm_config_verify_deps_before_run:-warn}"
+project="vern-login-test"
+domain="login.test"
+image="vern-zitadel-login:test"
+playwright="$(grep -oE '@playwright/test@[0-9]+\.[0-9]+\.[0-9]+' pnpm-lock.yaml | head -1 | cut -d@ -f3)"
 
-compose=(docker compose --project-name vern-login-test -f dev/compose.yml)
+export ZITADEL_VERSION="$(<.vern/UPSTREAM_VERSION)"
+export ZITADEL_LOGIN_IMAGE="$image"
+export ZITADEL_DOMAIN="$domain"
+export AUTH_EXTERNAL_PORT=80
+# Published only because the proxy always publishes; the test does not use it.
+export AUTH_HTTP_PORT="${AUTH_LOGIN_TEST_PORT:-18081}"
+
+compose=(docker compose --project-name "$project" -f dev/compose.yml)
 
 cleanup() {
   "${compose[@]}" down --volumes --remove-orphans >/dev/null 2>&1 || true
 }
 trap cleanup EXIT INT TERM
 
-NEXT_PUBLIC_BASE_PATH=/ui/v2/login ./node_modules/.bin/nx run @zitadel/login:build
-docker build -f apps/login/Dockerfile -t "$ZITADEL_LOGIN_IMAGE" apps/login
+docker build -f .vern/login.Dockerfile -t "$image" .
 "${compose[@]}" up -d --wait
 
-curl_args=()
-if [[ "$login_route_host" == "localhost" && "$(uname -s)" == "Darwin" ]]; then
-  export LOGIN_LOCALHOST_IPV6=true
-  curl_args+=(--ipv6)
-else
-  export LOGIN_LOCALHOST_IPV6=false
-fi
-if [[ "$AUTH_HTTP_PORT" != "80" ]]; then
-  echo "The isolated browser test must use host port 80 so the Host header matches the configured Traefik router."
-  echo "Free port 80 or set AUTH_LOGIN_TEST_PORT=80; a nonstandard port adds a port to Host and misses the localhost router."
-  exit 2
-fi
-login_url="http://${login_route_host}:${AUTH_HTTP_PORT}/ui/v2/login/"
-curl "${curl_args[@]}" --fail --silent --show-error --retry 20 --retry-all-errors --retry-delay 3 \
-  "${login_url}ready" >/dev/null
-(
-  cd apps/login
-  LOGIN_BASE_URL="$login_url" ./node_modules/.bin/playwright test --config acceptance/vern-playwright.config.ts
-)
+proxy_ip="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$("${compose[@]}" ps -q proxy)")"
+
+docker run --rm \
+  --network "${project}_default" \
+  --add-host "${domain}:${proxy_ip}" \
+  --volume "$PWD/apps/login/acceptance/vern-playwright.config.ts:/work/vern-playwright.config.ts:ro" \
+  --volume "$PWD/apps/login/acceptance/tests/vern-login.spec.ts:/work/tests/vern-login.spec.ts:ro" \
+  --env "LOGIN_BASE_URL=http://${domain}/ui/v2/login/" \
+  --workdir /work \
+  "mcr.microsoft.com/playwright:v${playwright}-noble" \
+  sh -c "
+    npm install --silent --no-save --no-package-lock @playwright/test@${playwright} &&
+    node -e '
+      const url = process.env.LOGIN_BASE_URL + \"ready\";
+      (async () => {
+        for (let i = 0; i < 60; i++) {
+          try { if ((await fetch(url)).ok) return; } catch {}
+          await new Promise((r) => setTimeout(r, 2000));
+        }
+        console.error(\"The Login App did not become ready at \" + url);
+        process.exit(1);
+      })();
+    ' &&
+    npx playwright test --config vern-playwright.config.ts
+  "

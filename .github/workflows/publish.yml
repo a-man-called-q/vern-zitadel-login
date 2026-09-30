@@ -12,16 +12,13 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - ".vern/UPSTREAM_VERSION"
+      - ".vern/login.Dockerfile*"
       - ".github/workflows/publish.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
   packages: write
-
-env:
-  NX_NO_CLOUD: "true"
-  NX_DAEMON: "false"
 
 jobs:
   build-and-publish:
@@ -30,25 +27,6 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.30.3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-
-      - name: Install workspace dependencies
-        run: pnpm install --frozen-lockfile --filter @zitadel/login...
-
-      - name: Build Login App
-        env:
-          NEXT_PUBLIC_BASE_PATH: /ui/v2/login
-        run: pnpm exec nx run @zitadel/login:build
 
       - name: Set image metadata
         id: image
@@ -60,8 +38,8 @@ jobs:
           echo "image=$image" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
-      # The build output is platform-independent JavaScript; QEMU only runs the
-      # Dockerfile's user setup for the arm64 image.
+      # The Login App is built once on the runner's platform; QEMU only runs the
+      # runtime stage's user setup for the arm64 image.
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -89,8 +67,8 @@ jobs:
         id: publish
         uses: docker/build-push-action@v6
         with:
-          context: apps/login
-          file: apps/login/Dockerfile
+          context: .
+          file: .vern/login.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.image.outputs.image }}:${{ steps.image.outputs.tag }}

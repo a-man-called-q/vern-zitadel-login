@@ -1,0 +1,8 @@
+.git
+**/node_modules
+**/.next
+**/.nx
+**/test-results
+**/playwright-report
+**/*.tsbuildinfo
+**/.env*.local

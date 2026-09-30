@@ -15,6 +15,9 @@ test.describe("Vern Login App @vern-login", () => {
   test("puts the form on the left and the brand aside on the right", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 960 });
     await page.goto("./loginname");
+    // boundingBox() does not wait: it returns null while the Suspense fallback shows.
+    await expect(page.getByTestId("username-text-input")).toBeVisible();
+    await expect(page.locator(".vern-auth-art")).toBeVisible();
 
     const form = await page.getByTestId("username-text-input").boundingBox();
     const aside = await page.locator(".vern-auth-art").boundingBox();

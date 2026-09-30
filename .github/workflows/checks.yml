@@ -59,3 +59,14 @@ jobs:
 
       - name: Verify generated workspace files and patch formatting
         run: git diff --check
+
+  # Builds the image the publish workflow ships and checks the sign-in shell in
+  # a browser against a local ZITADEL stack.
+  acceptance:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Run the Vern Login acceptance checks
+        run: dev/test-login.sh

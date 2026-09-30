@@ -6,9 +6,6 @@ RUN addgroup --system --gid 1001 nodejs && \
 RUN mkdir -p /.env-file && touch /.env-file/.env && chown -R nextjs:nodejs /.env-file
 
 COPY --chown=nextjs:nodejs .next/standalone ./
-# Vern: the standalone server serves static files from its own directory; the
-# build script only copies them to /app/public, where they are never served.
-COPY --chown=nextjs:nodejs public ./apps/login/public
 
 USER nextjs
 ENV HOSTNAME="::" \

@@ -1,5 +1,7 @@
 # Local ZITADEL stack for developing and testing this Login App.
 # Login: http://localhost:8081/ui/v2/login/  Console: http://localhost:8081/ui/console/
+# AUTH_HTTP_PORT is the published port; AUTH_EXTERNAL_PORT (default: the same)
+# is the port ZITADEL puts in its URLs, for clients that reach the proxy another way.
 name: vern-login-dev
 
 services:
@@ -27,7 +29,7 @@ services:
     environment:
       ZITADEL_PORT: "8080"
       ZITADEL_EXTERNALDOMAIN: "${ZITADEL_DOMAIN:-localhost}"
-      ZITADEL_EXTERNALPORT: "${AUTH_HTTP_PORT:-8081}"
+      ZITADEL_EXTERNALPORT: "${AUTH_EXTERNAL_PORT:-${AUTH_HTTP_PORT:-8081}}"
       ZITADEL_EXTERNALSECURE: "false"
       ZITADEL_TLS_ENABLED: "false"
       ZITADEL_DATABASE_POSTGRES_DSN: "postgresql://postgres:postgres@postgres:5432/zitadel?sslmode=disable"
@@ -39,10 +41,10 @@ services:
       ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME: Login UI
       ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: "2099-01-01T00:00:00Z"
       ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_REQUIRED: "true"
-      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: "http://${ZITADEL_DOMAIN:-localhost}:${AUTH_HTTP_PORT:-8081}/ui/v2/login/"
-      ZITADEL_OIDC_DEFAULTLOGINURLV2: "http://${ZITADEL_DOMAIN:-localhost}:${AUTH_HTTP_PORT:-8081}/ui/v2/login/login?authRequest="
-      ZITADEL_OIDC_DEFAULTLOGOUTURLV2: "http://${ZITADEL_DOMAIN:-localhost}:${AUTH_HTTP_PORT:-8081}/ui/v2/login/logout?post_logout_redirect="
-      ZITADEL_SAML_DEFAULTLOGINURLV2: "http://${ZITADEL_DOMAIN:-localhost}:${AUTH_HTTP_PORT:-8081}/ui/v2/login/login?samlRequest="
+      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: "http://${ZITADEL_DOMAIN:-localhost}:${AUTH_EXTERNAL_PORT:-${AUTH_HTTP_PORT:-8081}}/ui/v2/login/"
+      ZITADEL_OIDC_DEFAULTLOGINURLV2: "http://${ZITADEL_DOMAIN:-localhost}:${AUTH_EXTERNAL_PORT:-${AUTH_HTTP_PORT:-8081}}/ui/v2/login/login?authRequest="
+      ZITADEL_OIDC_DEFAULTLOGOUTURLV2: "http://${ZITADEL_DOMAIN:-localhost}:${AUTH_EXTERNAL_PORT:-${AUTH_HTTP_PORT:-8081}}/ui/v2/login/logout?post_logout_redirect="
+      ZITADEL_SAML_DEFAULTLOGINURLV2: "http://${ZITADEL_DOMAIN:-localhost}:${AUTH_EXTERNAL_PORT:-${AUTH_HTTP_PORT:-8081}}/ui/v2/login/login?samlRequest="
     healthcheck:
       test: ["CMD", "/app/zitadel", "ready"]
       interval: 10s
