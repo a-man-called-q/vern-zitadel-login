@@ -22,7 +22,6 @@ permissions:
 
 jobs:
   build-and-publish:
-    if: github.repository == 'a-man-called-q/vern-zitadel-login'
     runs-on: ubuntu-24.04
     steps:
       - name: Check out source
@@ -32,7 +31,9 @@ jobs:
         id: image
         run: |
           version="$(cat .vern/UPSTREAM_VERSION)"
-          image="ghcr.io/a-man-called-q/vern-zitadel-login"
+          # The image follows the repository, so a fork publishes to its own
+          # GHCR namespace. GHCR names must be lowercase.
+          image="ghcr.io/$(printf '%s' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')"
           tag="${version}-${GITHUB_SHA}"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "image=$image" >> "$GITHUB_OUTPUT"
@@ -73,7 +74,7 @@ jobs:
           push: true
           tags: ${{ steps.image.outputs.image }}:${{ steps.image.outputs.tag }}
           labels: |
-            org.opencontainers.image.source=https://github.com/a-man-called-q/vern-zitadel-login
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.version=${{ steps.image.outputs.version }}
           cache-from: type=gha,scope=vern-zitadel-login

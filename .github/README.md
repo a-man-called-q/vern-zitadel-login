@@ -8,6 +8,9 @@ image that Vern's local auth stack runs:
 ghcr.io/a-man-called-q/vern-zitadel-login:<zitadel-version>-<commit-sha>
 ```
 
+A fork publishes under its own name instead; see
+[Publish an image from your fork](#publish-an-image-from-your-fork).
+
 This is a slim fork: its history is ZITADEL's history filtered to the Login App
 and the sources it builds from (`apps/login`, `packages/`, `proto/` and the root
 files), following ZITADEL's
@@ -98,6 +101,26 @@ dev/test-login.sh
 `dev/test-login.sh` needs only Docker: it builds the image, starts
 `dev/compose.yml` as an isolated project, and runs the Vern Playwright checks
 from a container on that project's network.
+
+## Publish an image from your fork
+
+The **Publish Login image** workflow builds the image from `main` and pushes it
+to the GitHub Container Registry under the repository's own name, so a fork
+publishes to its own namespace:
+
+```
+ghcr.io/<owner>/<repository>:<zitadel-version>-<commit-sha>
+```
+
+1. Open the **Actions** tab of your fork and enable workflows; GitHub turns them
+   off in forks.
+2. Run **Publish Login image** once by hand (**Run workflow**). After that it runs
+   on pushes to `main` that touch the Login App. A commit is published once: its
+   tag is immutable.
+3. GHCR creates the package private. Make it public (**Package settings → Change
+   visibility**), or run `docker login ghcr.io` wherever the stack runs.
+4. In your Vern project, set `ZITADEL_LOGIN_IMAGE` in `apps/auth-server/.env` to
+   the published tag, and keep `ZITADEL_VERSION` equal to `.vern/UPSTREAM_VERSION`.
 
 ## Update to a new ZITADEL release
 

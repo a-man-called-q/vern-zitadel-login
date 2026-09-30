@@ -19,7 +19,6 @@ permissions:
 
 jobs:
   open-upstream-update:
-    if: github.repository == 'a-man-called-q/vern-zitadel-login'
     runs-on: ubuntu-24.04
     steps:
       - name: Check out fork history
