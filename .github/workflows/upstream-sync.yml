@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: ZITADEL release tag to sync (default: the latest stable release)
+        description: "ZITADEL release tag to sync (default: the latest stable release)"
         required: false
 
 # GITHUB_TOKEN is enough: pull requests it opens do not start workflows, so the
