@@ -1,0 +1,137 @@
+# Vern ZITADEL Login
+
+The [ZITADEL](https://github.com/zitadel/zitadel) Login App (Login V2) with the
+[Vern](https://github.com/a-man-called-q/vern) sign-in shell. It publishes the
+image that Vern's local auth stack runs:
+
+```
+ghcr.io/a-man-called-q/vern-zitadel-login:<zitadel-version>-<commit-sha>
+```
+
+This is a slim fork: its history is ZITADEL's history filtered to the Login App
+and the sources it builds from (`apps/login`, `packages/`, `proto/` and the root
+files), following ZITADEL's
+[fork and deploy guide](https://zitadel.com/docs/guides/integrate/login-ui/fork-and-deploy-login-app).
+Upstream releases merge in as regular merges, so Vern's changes stay on top.
+
+## What Vern changes
+
+- **Sign-in shell** (`src/components/dynamic-theme.tsx`, `src/styles/globals.scss`):
+  a blurred backdrop, the logo top-left and one card with the form on the left
+  and a brand aside on the right. Every ZITADEL step renders inside it unchanged.
+- **Username step** (`src/app/(login)/loginname/page.tsx`, `username-form.tsx`,
+  `sign-in-with-idp.tsx`): identity providers above the form, with a divider.
+- **Runtime brand** (`src/lib/vern-brand*.ts`, `vern-brand-provider.tsx`): the
+  shell's text and images come from a JSON file, so one image serves any brand.
+- **Accent colors** follow the ZITADEL branding settings (primary color, logo,
+  font) instead of a fixed palette.
+- A Playwright check for the desktop and mobile layouts
+  (`acceptance/tests/vern-login.spec.ts`).
+
+## Brand file
+
+Point `VERN_BRAND_FILE` at a JSON file mounted into the container. Every field
+is optional; missing or invalid fields keep the built-in Vern values and are
+logged. The file is re-read when it changes, without a restart.
+
+```json
+{
+  "headline": "One secure sign-in. All your work.",
+  "description": "Sign in to your workspace with the account and security options set up for you.",
+  "highlights": [
+    { "icon": "shield-check", "text": "Single sign-on across every workspace" },
+    { "icon": "key-round", "text": "Passkeys, authenticator apps and security keys" }
+  ],
+  "logo": { "light": "/brand/logo-light.svg", "dark": "/brand/logo-dark.svg" },
+  "backdrop": { "light": "/brand/backdrop-light.svg", "dark": "/brand/backdrop-dark.svg" },
+  "favicon": "/brand/favicon.svg"
+}
+```
+
+- `highlights`: up to four items; `[]` hides the list. Icons: `shield-check`,
+  `key-round`, `languages`, `fingerprint`, `lock`, `globe`, `users`, `sparkles`.
+- Image paths must be absolute paths on the login's own origin: the Login App's
+  Content Security Policy blocks images from other hosts. Vern serves them from
+  `/brand/` through its proxy.
+- A logo uploaded in the ZITADEL branding settings replaces the brand file's
+  logo for that organization.
+
+## Develop
+
+Requirements: Node.js (see `.nvmrc`), pnpm through Corepack, and Docker.
+
+```sh
+corepack enable
+pnpm install --frozen-lockfile --filter @zitadel/login...
+```
+
+Start a local ZITADEL with the Login image you built (see `dev/test-login.sh` for
+the build commands), or with a published image:
+
+```sh
+ZITADEL_VERSION="$(cat .vern/UPSTREAM_VERSION)" \
+ZITADEL_LOGIN_IMAGE=ghcr.io/a-man-called-q/vern-zitadel-login:<tag> \
+docker compose -f dev/compose.yml up -d --wait
+```
+
+The Login is at <http://localhost:8081/ui/v2/login/> and the Console at
+<http://localhost:8081/ui/console/> (`zitadel-admin` / `Password1!`). To run the
+Next.js dev server against it, copy the login client token out of the stack and
+create `apps/login/.env.dev.local`, as the upstream guide describes:
+
+```sh
+docker compose -f dev/compose.yml cp zitadel-api:/zitadel/bootstrap/login-client.pat /tmp/login-client.pat
+printf 'ZITADEL_API_URL=http://localhost:8081\nZITADEL_SERVICE_USER_TOKEN=%s\n' "$(cat /tmp/login-client.pat)" > apps/login/.env.dev.local
+pnpm nx run @zitadel/login:dev
+```
+
+Checks, as CI runs them:
+
+```sh
+pnpm exec nx run @zitadel/login:build
+pnpm exec nx run @zitadel/login:lint
+pnpm exec nx run @zitadel/login:test-unit
+dev/test-login.sh   # builds the image and runs the Vern Playwright checks
+```
+
+## Update to a new ZITADEL release
+
+The **ZITADEL upstream sync** workflow runs weekly. For a new stable release it
+imports the filtered release as the tag `upstream/<version>`, merges it into a
+branch and opens a pull request. It needs a `ZITADEL_UPSTREAM_SYNC_TOKEN`
+repository secret: a fine-grained token for this repository with **Contents**
+and **Pull requests** read and write, so its pull requests trigger CI.
+
+To do the same by hand:
+
+```sh
+scripts/filter-upstream.sh v4.20.0
+git switch -c sync/zitadel-v4.20.0
+git merge --no-ff upstream/v4.20.0
+echo v4.20.0 > .vern/UPSTREAM_VERSION
+git commit -am "chore: record ZITADEL v4.20.0 baseline"
+git push origin refs/tags/upstream/v4.20.0 sync/zitadel-v4.20.0
+```
+
+The import must map the same upstream commit to the same slim commit every
+time, or merges pull in unrelated history. So:
+
+- Use git-filter-repo **2.47.0** (`pipx install git-filter-repo==2.47.0` or
+  `brew install git-filter-repo`).
+- Never change `.vern/slim-paths`. The workflow re-imports the current release
+  first and stops if the hash changed.
+
+## Publish
+
+Every push to `main` that touches the Login sources builds a multi-platform
+image tagged `<zitadel-version>-<commit-sha>`. Tags are never overwritten. The
+run summary shows the two lines to set in Vern's `apps/auth-server/.env.example`;
+change `ZITADEL_VERSION` and `ZITADEL_LOGIN_IMAGE` together, since the backend
+and the Login App must run the same release.
+
+## License
+
+This repository keeps ZITADEL's licensing unchanged: the repository is
+[AGPL-3.0-only](../LICENSE), with the exceptions in [LICENSING.md](../LICENSING.md)
+(`apps/login` and `packages/zitadel-*` are MIT, `proto/` is Apache-2.0). Vern's
+changes to `apps/login` are MIT, like the rest of that directory.

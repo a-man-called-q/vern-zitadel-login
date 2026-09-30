@@ -1,0 +1,13 @@
+# git filter-repo arguments for scripts/filter-upstream.sh, one per line.
+# Never change these: every upstream import must produce the same hashes.
+# --no-ff keeps merges whose first parent became an ancestor of the other parent;
+# without it filter-repo drops the file changes of those merges.
+--no-ff
+--path
+apps/login/
+--path
+packages/
+--path
+proto/
+--path-regex
+^[^/]+$
