@@ -65,12 +65,13 @@ corepack enable
 pnpm install --frozen-lockfile --filter @zitadel/login...
 ```
 
-Start a local ZITADEL with the Login image you built (see `dev/test-login.sh` for
-the build commands), or with a published image:
+Build the image the way CI publishes it (the build runs inside Docker), then
+start a local ZITADEL with it:
 
 ```sh
+docker build -f .vern/login.Dockerfile -t vern-zitadel-login:local .
 ZITADEL_VERSION="$(cat .vern/UPSTREAM_VERSION)" \
-ZITADEL_LOGIN_IMAGE=ghcr.io/a-man-called-q/vern-zitadel-login:<tag> \
+ZITADEL_LOGIN_IMAGE=vern-zitadel-login:local \
 docker compose -f dev/compose.yml up -d --wait
 ```
 
@@ -91,16 +92,21 @@ Checks, as CI runs them:
 pnpm exec nx run @zitadel/login:build
 pnpm exec nx run @zitadel/login:lint
 pnpm exec nx run @zitadel/login:test-unit
-dev/test-login.sh   # builds the image and runs the Vern Playwright checks
+dev/test-login.sh
 ```
+
+`dev/test-login.sh` needs only Docker: it builds the image, starts
+`dev/compose.yml` as an isolated project, and runs the Vern Playwright checks
+from a container on that project's network.
 
 ## Update to a new ZITADEL release
 
 The **ZITADEL upstream sync** workflow runs weekly. For a new stable release it
 imports the filtered release as the tag `upstream/<version>`, merges it into a
-branch and opens a pull request. It needs a `ZITADEL_UPSTREAM_SYNC_TOKEN`
-repository secret: a fine-grained token for this repository with **Contents**
-and **Pull requests** read and write, so its pull requests trigger CI.
+branch, opens a pull request and runs the checks on it. It uses the workflow's
+own token, so the repository must allow GitHub Actions to create pull requests
+(**Settings → Actions → General → Workflow permissions**). Run it by hand with a
+`version` input to sync a specific release.
 
 To do the same by hand:
 

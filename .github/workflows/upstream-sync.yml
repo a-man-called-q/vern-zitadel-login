@@ -4,8 +4,16 @@ on:
   schedule:
     - cron: "17 5 * * 1"
   workflow_dispatch:
+    inputs:
+      version:
+        description: ZITADEL release tag to sync (default: the latest stable release)
+        required: false
 
+# GITHUB_TOKEN is enough: pull requests it opens do not start workflows, so the
+# last step dispatches the checks on the sync branch itself. The repository must
+# allow GitHub Actions to create pull requests (Settings > Actions > General).
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -19,26 +27,18 @@ jobs:
         with:
           fetch-depth: 0
           ref: main
-          token: ${{ secrets.ZITADEL_UPSTREAM_SYNC_TOKEN || github.token }}
-
-      - name: Require a token that triggers pull request checks
-        env:
-          SYNC_TOKEN: ${{ secrets.ZITADEL_UPSTREAM_SYNC_TOKEN }}
-        run: |
-          if [ -z "$SYNC_TOKEN" ]; then
-            echo "Configure the ZITADEL_UPSTREAM_SYNC_TOKEN repository secret so branches and PRs created by this workflow trigger CI."
-            exit 1
-          fi
 
       - name: Configure Git identity
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Find latest stable ZITADEL release
+      - name: Find the ZITADEL release to sync
         id: release
+        env:
+          REQUESTED: ${{ inputs.version }}
         run: |
-          version="$(curl --fail --silent --show-error https://api.github.com/repos/zitadel/zitadel/releases/latest | jq -r .tag_name)"
+          version="${REQUESTED:-$(curl --fail --silent --show-error https://api.github.com/repos/zitadel/zitadel/releases/latest | jq -r .tag_name)}"
           if [ -z "$version" ] || [ "$version" = "null" ]; then
             echo "Could not resolve the latest stable ZITADEL release."
             exit 1
@@ -56,7 +56,7 @@ jobs:
         id: duplicate
         if: steps.release.outputs.needs_update == 'true'
         env:
-          GH_TOKEN: ${{ secrets.ZITADEL_UPSTREAM_SYNC_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.release.outputs.version }}
         run: |
           title="chore: sync ZITADEL ${VERSION}"
@@ -110,10 +110,10 @@ jobs:
           git push origin "refs/tags/upstream/${VERSION}" "$branch"
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
-      - name: Open review PR
+      - name: Open review PR and run its checks
         if: steps.merge.outputs.branch != ''
         env:
-          GH_TOKEN: ${{ secrets.ZITADEL_UPSTREAM_SYNC_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.release.outputs.version }}
           BRANCH: ${{ steps.merge.outputs.branch }}
         run: |
@@ -130,3 +130,4 @@ jobs:
             --head "$BRANCH" \
             --title "chore: sync ZITADEL ${VERSION}" \
             --body-file "$body_file"
+          gh workflow run checks.yml --ref "$BRANCH"
