@@ -20,12 +20,14 @@ Upstream releases merge in as regular merges, so Vern's changes stay on top.
 ## What Vern changes
 
 - **Sign-in shell** (`src/components/dynamic-theme.tsx`, `src/styles/globals.scss`):
-  a blurred backdrop, the logo top-left and one card with the form on the left
-  and a brand aside on the right. Every ZITADEL step renders inside it unchanged.
+  a full-height split screen with an art panel on the left and the form on the
+  right. Every ZITADEL step renders inside it unchanged. The art panel is a slot
+  filled in code (`src/components/vern-auth-aside.tsx`); below the `lg`
+  breakpoint it is hidden and the logo moves above the form.
 - **Username step** (`src/app/(login)/loginname/page.tsx`, `username-form.tsx`,
   `sign-in-with-idp.tsx`): identity providers above the form, with a divider.
 - **Runtime brand** (`src/lib/vern-brand*.ts`, `vern-brand-provider.tsx`): the
-  shell's text and images come from a JSON file, so one image serves any brand.
+  shell's logo and favicon come from a JSON file, so one image serves any brand.
 - **Accent colors** follow the ZITADEL branding settings (primary color, logo,
   font) instead of a fixed palette.
 - A Playwright check for the desktop and mobile layouts
@@ -39,20 +41,16 @@ logged. The file is re-read when it changes, without a restart.
 
 ```json
 {
-  "headline": "One secure sign-in. All your work.",
-  "description": "Sign in to your workspace with the account and security options set up for you.",
-  "highlights": [
-    { "icon": "shield-check", "text": "Single sign-on across every workspace" },
-    { "icon": "key-round", "text": "Passkeys, authenticator apps and security keys" }
-  ],
   "logo": { "light": "/brand/logo-light.svg", "dark": "/brand/logo-dark.svg" },
-  "backdrop": { "light": "/brand/backdrop-light.svg", "dark": "/brand/backdrop-dark.svg" },
   "favicon": "/brand/favicon.svg"
 }
 ```
 
-- `highlights`: up to four items; `[]` hides the list. Icons: `shield-check`,
-  `key-round`, `languages`, `fingerprint`, `lock`, `globe`, `users`, `sparkles`.
+- The art panel shows `logo.dark` in both themes, since its image stays dark.
+  Its image and text are not part of the brand file: edit
+  `src/components/vern-auth-aside.tsx` and rebuild the image to change them.
+- Fields of older brand files (`headline`, `description`, `highlights`,
+  `backdrop`) are ignored, so an existing file still loads.
 - Image paths must be absolute paths on the login's own origin: the Login App's
   Content Security Policy blocks images from other hosts. Vern serves them from
   `/brand/` through its proxy.

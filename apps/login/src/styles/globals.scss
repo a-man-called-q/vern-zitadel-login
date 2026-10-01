@@ -18,9 +18,10 @@ html {
   --dark-background-color: #000000;
 }
 
-// Vern login shell, modelled on the shadcn/studio "login-08" block. Everything is
-// scoped to `.vern-auth-panel` (or `.vern-auth-idp`) so the upstream ZITADEL
-// components stay untouched. These rules are unlayered on purpose: they win over
+// Vern login shell: the form column of the split screen in dynamic-theme.tsx, with
+// controls modelled on the shadcn/studio "login-08" block. Everything is scoped
+// to `.vern-auth-panel` (or `.vern-auth-idp`) so the upstream ZITADEL components
+// stay untouched. These rules are unlayered on purpose: they win over
 // the Tailwind utilities that the upstream components use.
 //
 // Accent colors come from the ZITADEL branding settings (`--theme-*` variables set

@@ -67,14 +67,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <LanguageProvider>
                 <VernBrandProvider brand={brand}>
                   <BackgroundWrapper
-                    className={`bg-background-light-600 dark:bg-background-dark-600 relative isolate flex min-h-svh flex-col justify-center`}
+                    className={`bg-background-light-600 dark:bg-background-dark-600 relative isolate min-h-svh`}
                   >
-                    <div className="relative mx-auto flex w-full max-w-[1280px] flex-1 flex-col justify-center px-4 py-5 sm:px-6 lg:px-10">
-                      <div className="w-full flex-1 content-center">{children}</div>
-                      <div className="mx-auto flex w-full max-w-[1180px] flex-row items-center justify-end space-x-4 px-2 py-3 sm:px-4">
-                        <LanguageSwitcher languages={languages} />
-                        <ThemeSwitch />
-                      </div>
+                    {children}
+                    <div className="absolute end-0 bottom-0 flex flex-row items-center space-x-4 px-6 py-4 sm:px-8">
+                      <LanguageSwitcher languages={languages} />
+                      <ThemeSwitch />
                     </div>
                   </BackgroundWrapper>
                 </VernBrandProvider>
