@@ -35,11 +35,18 @@ test.describe("Vern Login App @vern-login", () => {
     expect(aside!.width).toBe(640);
   });
 
-  test("hides Back when there is no page to go back to", async ({ page }) => {
+  test("hides Back when there is no page to go back to", async ({ context, page }) => {
     await page.goto("./loginname");
-    await expect(page.getByTestId("username-text-input")).toBeVisible();
+    // A Playwright page keeps its initial about:blank in the history, so open the
+    // login in a fresh tab instead, like a link from an email: its history is empty.
+    const [tab] = await Promise.all([
+      context.waitForEvent("page"),
+      page.evaluate((url) => window.open(url, "_blank", "noopener"), page.url()),
+    ]);
+    await expect(tab.getByTestId("username-text-input")).toBeVisible();
+    expect(await tab.evaluate(() => window.history.length)).toBe(1);
 
-    await expect(page.getByRole("button", { name: "Back" })).toHaveCount(0);
+    await expect(tab.getByRole("button", { name: "Back" })).toHaveCount(0);
   });
 
   test("shows Back after navigating to the sign-in screen", async ({ page }) => {
