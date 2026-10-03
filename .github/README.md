@@ -23,9 +23,15 @@ Upstream releases merge in as regular merges, so Vern's changes stay on top.
   a full-height split screen with an art panel on the left and the form on the
   right. Every ZITADEL step renders inside it unchanged. The art panel is a slot
   filled in code (`src/components/vern-auth-aside.tsx`); below the `lg`
-  breakpoint it is hidden and the logo moves above the form.
+  breakpoint it is hidden and the logo moves above the form. Each step's
+  primary button fills the width, with Back as a text link below it.
 - **Username step** (`src/app/(login)/loginname/page.tsx`, `username-form.tsx`,
-  `sign-in-with-idp.tsx`): identity providers above the form, with a divider.
+  `sign-in-with-idp.tsx`): identity providers above the form, with a divider;
+  a user icon in the field (`input.tsx` takes an `icon`) and the English copy
+  in `locales/en.json`.
+- **Back button** (`back-button.tsx`): hidden when the tab has no page to go
+  back to, such as a login opened from a bookmark.
+- **Language switcher** (`language-switcher.tsx`): a globe icon.
 - **Runtime brand** (`src/lib/vern-brand*.ts`, `vern-brand-provider.tsx`): the
   shell's logo and favicon come from a JSON file, so one image serves any brand.
 - **Accent colors** follow the ZITADEL branding settings (primary color, logo,

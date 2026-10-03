@@ -4,7 +4,7 @@ import { setLanguageCookie } from "@/lib/cookies";
 import { Lang } from "@/lib/i18n";
 import { APPEARANCE_STYLES, getComponentRoundness, getThemeConfig } from "@/lib/theme";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
-import { CheckIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, ChevronDownIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -41,15 +41,16 @@ export function LanguageSwitcher({ languages }: { languages: Lang[] }) {
   };
 
   return (
-    <div className="w-32">
+    <div className="w-36">
       <Listbox value={selected} onChange={handleChange}>
         <ListboxButton
           className={clsx(
-            `relative block w-full py-1.5 pr-8 pl-3 text-left text-sm/6 text-black dark:text-white ${switcherRoundness}`,
+            `relative block w-full py-1.5 pr-8 pl-9 text-left text-sm/6 text-black dark:text-white ${switcherRoundness}`,
             cardAppearance,
             "focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25",
           )}
         >
+          <GlobeAltIcon className="pointer-events-none absolute top-2 left-3 size-5" aria-hidden="true" />
           {selected.name}
           <ChevronDownIcon className="group pointer-events-none absolute top-2.5 right-2.5 size-4" aria-hidden="true" />
         </ListboxButton>

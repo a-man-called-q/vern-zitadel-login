@@ -41,7 +41,7 @@ export function DynamicTheme({
   return (
     <ThemeWrapper branding={branding}>
       <VernBrandProvider brand={{ ...brand, logo }}>
-        <div className={hasAside ? "lg:grid lg:grid-cols-[minmax(22rem,1fr)_minmax(0,2fr)]" : ""}>
+        <div className={hasAside ? "lg:grid lg:grid-cols-[minmax(22rem,4fr)_minmax(0,5fr)]" : ""}>
           {hasAside && (
             <aside className="vern-auth-art relative hidden overflow-hidden bg-[#0c0e18] lg:sticky lg:top-0 lg:block lg:h-svh">
               {aside}
@@ -53,7 +53,7 @@ export function DynamicTheme({
               <Logo lightSrc={logo.light} darkSrc={logo.dark} height={34} width={133} />
             </header>
 
-            <div className="mx-auto my-auto flex w-full max-w-sm flex-col gap-6 py-10 [&_h1]:text-2xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h1]:text-neutral-950 [&_h1]:dark:text-white [&>div:first-child>.ztdl-p]:text-center">
+            <div className="mx-auto my-auto flex w-full max-w-md flex-col gap-8 py-10 [&_h1]:text-start [&_h1]:text-3xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h1]:text-neutral-950 [&_h1]:dark:text-white [&>div:first-child>.ztdl-p]:text-base">
               {children}
             </div>
           </main>

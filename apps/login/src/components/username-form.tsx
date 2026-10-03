@@ -2,6 +2,7 @@
 
 import { handleServerActionResponse } from "@/lib/client-utils";
 import { sendLoginname } from "@/lib/server/loginname";
+import { ArrowRightIcon, UserIcon } from "@heroicons/react/24/outline";
 import { LoginSettings } from "@zitadel/proto/zitadel/settings/v2/login_settings_pb";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -111,6 +112,7 @@ export function UsernameForm({
             autoFocus
             {...register("loginName", { required: t("required.loginName") })}
             label={inputLabel}
+            icon={<UserIcon />}
             data-testid="username-text-input"
             suffix={hideSuffix ? undefined : suffix}
           />
@@ -134,6 +136,7 @@ export function UsernameForm({
           >
             {loading && <Spinner className="mr-2 h-5 w-5" />}
             <Translated i18nKey="submit" namespace="loginname" />
+            <ArrowRightIcon aria-hidden="true" className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </form>

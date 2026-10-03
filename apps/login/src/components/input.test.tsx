@@ -35,6 +35,19 @@ describe("TextInput Component", () => {
       render(<TextInput label="Required Field" required />);
       expect(screen.getByText(/\*/)).toBeTruthy();
     });
+
+    it("should render a decorative icon and make room for it", () => {
+      const { container } = render(<TextInput label="Email" icon={<svg data-testid="icon" />} />);
+      const icon = screen.getByTestId("icon");
+      expect(icon.parentElement?.getAttribute("aria-hidden")).toBe("true");
+      expect(container.querySelector("input")?.style.paddingInlineStart).toBe("3rem");
+    });
+
+    it("should not wrap the input without an icon", () => {
+      const { container } = render(<TextInput label="Email" />);
+      expect(container.querySelector("label > input")).toBeTruthy();
+      expect(container.querySelector("input")?.style.paddingInlineStart).toBe("");
+    });
   });
 
   describe("Input States", () => {

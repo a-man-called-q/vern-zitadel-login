@@ -72,13 +72,15 @@ html {
   }
 }
 
-.vern-auth-panel label > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) {
-  height: 2.25rem;
+// `label > span > input`: a TextInput with an `icon` wraps its field in a span.
+.vern-auth-panel label > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.vern-auth-panel label > span > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) {
+  height: 2.75rem;
   min-height: 0;
   border: 1px solid var(--vern-border);
   border-radius: 0.5rem;
   background-color: var(--vern-field);
-  padding: 0.25rem 0.625rem;
+  padding: 0.25rem 0.875rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: var(--vern-foreground);
@@ -87,27 +89,31 @@ html {
     box-shadow 150ms ease;
 }
 
-.vern-auth-panel label > input::placeholder {
+.vern-auth-panel label input::placeholder {
   font-style: normal;
   color: var(--vern-muted);
 }
 
-.vern-auth-panel label > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):focus {
+.vern-auth-panel label > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):focus,
+.vern-auth-panel label > span > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):focus {
   border-color: var(--vern-primary);
   box-shadow: 0 0 0 3px var(--vern-ring);
   outline: none;
 }
 
-.vern-auth-panel label > input[class*="border-warn-light-500"] {
+.vern-auth-panel label input[class*="border-warn-light-500"] {
   border-color: var(--theme-light-warn-500);
 }
 
-.dark .vern-auth-panel label > input[class*="border-warn-light-500"] {
+.dark .vern-auth-panel label input[class*="border-warn-light-500"] {
   border-color: var(--theme-dark-warn-500);
 }
 
 .vern-auth-panel
-  label:has(> input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]))
+  label:has(
+    > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+    > span > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"])
+  )
   > span:first-child:not([class*="text-warn"]) {
   margin-bottom: 0.5rem;
   font-size: 0.875rem;
@@ -119,13 +125,13 @@ html {
 .vern-auth-panel button[data-testid="submit-button"] {
   flex: 1;
   justify-content: center;
-  height: 2.25rem;
+  height: 2.75rem;
   border: 1px solid var(--vern-primary);
   border-radius: 0.5rem;
   background-color: var(--vern-primary);
   padding: 0 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.9375rem;
+  font-weight: 600;
   line-height: 1.25rem;
   color: var(--vern-on-primary);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
@@ -149,28 +155,50 @@ html {
   opacity: 0.5;
 }
 
-// The action rows are `[Back] <flex-grow spacer> [Submit]`: drop the spacer so the
-// submit button fills the row, like the full-width button in login-08.
+// The action rows are `[Back] <flex-grow spacer> [Submit]`. Stack them: the submit
+// button fills the row and Back becomes a text link below it. `column-reverse`
+// keeps the upstream markup (and so Back stays first in the tab order).
+.vern-auth-panel div:has(> span.flex-grow:empty) {
+  flex-direction: column-reverse;
+  align-items: stretch;
+  gap: 1.5rem;
+}
+
 .vern-auth-panel span.flex-grow:empty {
   display: none;
 }
 
-.vern-auth-panel button:has(+ span.flex-grow:empty) {
-  height: 2.25rem;
-  margin-inline-end: 0.75rem;
-  border: 1px solid var(--vern-border);
-  border-radius: 0.5rem;
-  background-color: var(--vern-field);
-  padding: 0 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.25rem;
-  color: var(--vern-foreground);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+// The upstream submit button has `flex: 1` and `self-end`, which would size it by
+// its content height and width in a column.
+.vern-auth-panel div:has(> span.flex-grow:empty) > * {
+  flex: none;
+  align-self: stretch;
 }
 
-.vern-auth-panel button:has(+ span.flex-grow:empty):hover:not(:disabled) {
-  background-color: var(--vern-hover);
+.vern-auth-panel button:has(+ span.flex-grow:empty) {
+  align-self: flex-start;
+  height: auto;
+  border: 0;
+  background-color: transparent;
+  padding: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: var(--vern-muted);
+  box-shadow: none;
+  transition: color 150ms ease;
+}
+
+.vern-auth-panel button:has(+ span.flex-grow:empty):hover:not(:disabled),
+.vern-auth-panel button:has(+ span.flex-grow:empty):focus {
+  background-color: transparent;
+  color: var(--vern-foreground);
+}
+
+.vern-auth-panel button:has(+ span.flex-grow:empty):focus-visible {
+  border-radius: 0.25rem;
+  outline: 2px solid var(--vern-ring);
+  outline-offset: 4px;
 }
 
 // Text links only: filled primary buttons use `text-primary-*-contrast-*`.
