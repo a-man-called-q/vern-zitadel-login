@@ -31,6 +31,24 @@ test.describe("Vern Login App @vern-login", () => {
     expect(aside!.x).toBe(0);
     expect(aside!.height).toBe(960);
     expect(aside!.width + panel!.width).toBe(1440);
+    // The art panel takes 4/9 of the width.
+    expect(aside!.width).toBe(640);
+  });
+
+  test("hides Back when there is no page to go back to", async ({ page }) => {
+    await page.goto("./loginname");
+    await expect(page.getByTestId("username-text-input")).toBeVisible();
+
+    await expect(page.getByRole("button", { name: "Back" })).toHaveCount(0);
+  });
+
+  test("shows Back after navigating to the sign-in screen", async ({ page }) => {
+    await page.goto("./loginname");
+    await expect(page.getByTestId("username-text-input")).toBeVisible();
+    await page.goto("./loginname?loginName=");
+    await expect(page.getByTestId("username-text-input")).toBeVisible();
+
+    await expect(page.getByRole("button", { name: "Back" })).toBeVisible();
   });
 
   test("fills the art panel with its image", async ({ page }) => {

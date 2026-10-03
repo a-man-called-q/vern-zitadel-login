@@ -16,6 +16,7 @@ export type TextInputProps = DetailedHTMLProps<InputHTMLAttributes<HTMLInputElem
   onChange?: (value: ChangeEvent<HTMLInputElement>) => void;
   onBlur?: (value: ChangeEvent<HTMLInputElement>) => void;
   roundness?: string; // Allow override via props
+  icon?: ReactNode; // Decorative icon at the start of the field
 };
 
 const styles = (error: boolean, disabled: boolean, roundnessClasses: string = "rounded-md") =>
@@ -51,6 +52,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       onChange,
       onBlur,
       roundness,
+      icon,
       ...props
     },
     ref,
@@ -58,24 +60,41 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     // Use theme-based roundness if not explicitly provided
     const actualRoundness = roundness || getDefaultInputRoundness();
 
+    const field = (
+      <input
+        suppressHydrationWarning
+        ref={ref}
+        className={styles(!!error, !!disabled, actualRoundness)}
+        defaultValue={defaultValue}
+        required={required}
+        disabled={disabled}
+        placeholder={placeholder}
+        autoComplete={props.autoComplete ?? "off"}
+        onChange={(e) => onChange && onChange(e)}
+        onBlur={(e) => onBlur && onBlur(e)}
+        {...props}
+        style={icon ? { paddingInlineStart: "3rem", ...props.style } : props.style}
+      />
+    );
+
     return (
       <label className="text-12px text-input-light-label dark:text-input-dark-label relative flex flex-col">
         <span className={`mb-1 leading-3 ${error ? "text-warn-light-500 dark:text-warn-dark-500" : ""}`}>
           {label} {required && "*"}
         </span>
-        <input
-          suppressHydrationWarning
-          ref={ref}
-          className={styles(!!error, !!disabled, actualRoundness)}
-          defaultValue={defaultValue}
-          required={required}
-          disabled={disabled}
-          placeholder={placeholder}
-          autoComplete={props.autoComplete ?? "off"}
-          onChange={(e) => onChange && onChange(e)}
-          onBlur={(e) => onBlur && onBlur(e)}
-          {...props}
-        />
+        {icon ? (
+          <span className="relative flex">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-4 text-neutral-500 dark:text-neutral-400 [&>svg]:size-5"
+            >
+              {icon}
+            </span>
+            {field}
+          </span>
+        ) : (
+          field
+        )}
 
         {suffix && (
           <span

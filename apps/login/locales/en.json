@@ -23,14 +23,14 @@
     }
   },
   "loginname": {
-    "title": "Welcome back!",
-    "description": "Enter your login details.",
+    "title": "Sign in to your account",
+    "description": "Enter your email or username to continue.",
     "register": "Register new user",
     "noAccount": "Don't have an account?",
     "signUp": "Sign up",
     "submit": "Continue",
     "labels": {
-      "loginname": "Loginname",
+      "loginname": "Email or username",
       "username": "Username",
       "usernameOrPhoneNumber": "Username or phone number",
       "usernameOrEmail": "Username or email"
