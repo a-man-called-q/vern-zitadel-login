@@ -4,7 +4,7 @@ import { SAMLRequest } from "@zitadel/proto/zitadel/saml/v2/authorization_pb";
 import { Session } from "@zitadel/proto/zitadel/session/v2/session_pb";
 import { GetSessionResponse } from "@zitadel/proto/zitadel/session/v2/session_service_pb";
 import { AuthenticationMethodType } from "@zitadel/proto/zitadel/user/v2/user_service_pb";
-import { getMostRecentCookieWithLoginname } from "./cookies";
+import { getMostRecentCookieWithLoginname, getSessionCookieById } from "./cookies";
 import { shouldEnforceMFA } from "./verify-helper";
 import { getLoginSettings, getSession, getUserByID, listAuthenticationMethodTypes, ServiceConfig } from "./zitadel";
 
@@ -29,21 +29,45 @@ export async function loadMostRecentSession({
     return undefined;
   }
 
-  return getSession({ serviceConfig, sessionId: recent.id, sessionToken: recent.token })
+  return loadSession(serviceConfig, recent);
+}
+
+export async function loadSessionById(
+  serviceConfig: ServiceConfig,
+  sessionId: string,
+  organization?: string,
+): Promise<Session | undefined> {
+  const recent = await getSessionCookieById({ sessionId, organization });
+
+  if (!recent) {
+    return undefined;
+  }
+
+  return loadSession(serviceConfig, recent);
+}
+
+export async function loadSession(
+  serviceConfig: ServiceConfig,
+  cookie: { id: string; token: string },
+): Promise<Session | undefined> {
+  return getSession({ serviceConfig, sessionId: cookie.id, sessionToken: cookie.token })
     .then((resp: GetSessionResponse) => resp.session)
     .catch(async (error) => {
       const { Code, ConnectError } = await import("@connectrpc/connect");
-      const isNotFound = error instanceof ConnectError && error.code === Code.NotFound;
+      const isSessionRejected =
+        error instanceof ConnectError && (error.code === Code.NotFound || error.code === Code.PermissionDenied);
 
       // The `sessions` cookie has no maxAge, so it can outlive the server-side session
-      // and reference one the session projection no longer holds — e.g. the user logged out, an
+      // and reference one the session projection no longer holds, e.g. the user logged out, an
       // admin/API terminated the session, or the user/org/instance was removed. In that
-      // case getSession throws `not_found`. Treat it like the no-cookie case above and
-      // return undefined instead of letting the error crash the caller's render. Every
-      // call site already handles an undefined session — either with a graceful fallback
+      // case getSession throws `not_found`. If the session still exists but the cookie's token
+      // no longer matches it (e.g. the token was rotated by a later session update), getSession
+      // throws `permission_denied` (QUERY-dsfr3). Treat both like the no-cookie case and
+      // return undefined instead of letting the error crash the caller's render.
+      // Every call site already handles an undefined session, either with a graceful fallback
       // or by throwing its own explicit "no session" error.
-      if (isNotFound) {
-        console.warn("[Session] Could not load most recent session", error);
+      if (isSessionRejected) {
+        console.warn("[Session] Could not load session", error);
         return undefined;
       }
 

@@ -32,6 +32,11 @@ const nextConfig = {
   outputFileTracingRoot: workspaceRoot,
   turbopack: { root: workspaceRoot },
   reactStrictMode: true,
+  typescript: {
+    // Since Next.js 16.3 the build type-checks every file matched by tsconfig.json,
+    // including unit tests, which vitest runs without type-checking.
+    tsconfigPath: "tsconfig.build.json",
+  },
   experimental: {
     // Add React 19 compatibility optimizations
     optimizePackageImports: ["@radix-ui/react-tooltip", "@heroicons/react"],
